@@ -1,0 +1,6 @@
+interface:
+  display_name: "编程核心工作流"
+  short_description: "按研究、构思、计划、执行、评审五阶段完成并验证开发任务"
+  default_prompt: "使用 $workflow 处理这个开发需求，先研究和规划，待我批准计划后再实施并评审。"
+policy:
+  allow_implicit_invocation: true
