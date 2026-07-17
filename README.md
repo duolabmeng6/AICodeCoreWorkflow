@@ -67,3 +67,8 @@ skills/
 | Codex | `~/.agents/skills/workflow` 或 `$CODEX_HOME/skills/workflow` | `.agents/skills/workflow` | `$workflow` |
 
 使用软链接安装时，后续只需更新本仓库；复制安装时，需要重新复制 `skills/workflow`。
+
+
+# linux.do 社区
+https://linux.do/ 
+id: duolabmeng6
