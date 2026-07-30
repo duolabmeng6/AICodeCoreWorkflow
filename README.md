@@ -6,6 +6,7 @@
 - `core-memory`：可独立或由 `workflow` 调用的项目长期记忆助手。
 - `review-agent`：只读、缺陷优先的评审 Skill 回退包。
 - `terra-explorer`、`luna-worker`、`terra-reviewer`：供 Codex 编排时生成子代理的自定义代理。
+- `agents/codex/AGENTS.md`：Codex 全局通用子代理调度规则的中文模板，不替代 `workflow` 的分级流程。
 
 ## 安装
 
@@ -19,16 +20,16 @@
 
 1. 把仓库下载或克隆到临时目录；不要把仓库根目录当成单个 Skill，也不要假设 Skill 安装器会处理 `agents/`。
 2. 安装 `skills/workflow` 与 `skills/core-memory` 到宿主的个人 Skill 根目录，各自保留独立目录名。
-3. 如果宿主是 Codex，先把 `${CODEX_HOME:-$HOME/.codex}` 解析为实际路径，再逐个安装 `agents/codex/*.toml` 到其 `agents/` 目录。
-4. 每个目标文件或目录都先检查冲突：目标不存在则安装；内容相同则复用；目标存在但内容不同则不得静默覆盖，保留原文件并向用户说明差异，只有获得明确同意后才能替换。
+3. 如果宿主是 Codex，先把 `${CODEX_HOME:-$HOME/.codex}` 解析为实际的 `$CODEX_HOME` 路径；把 `agents/codex/AGENTS.md` 安装到 `$CODEX_HOME/AGENTS.md`，并且只把 `agents/codex/*.toml` 安装到 `$CODEX_HOME/agents/`。
+4. 每个目标文件或目录都先检查冲突：目标不存在则安装；内容相同则复用；目标存在但内容不同则保留并报告差异，只有获得明确同意后才能替换。绝不静默覆盖已有的全局 `$CODEX_HOME/AGENTS.md`。
 5. 如果 Codex 已提供内置或 system `review-agent`，直接复用且不得覆盖；只在缺失时安装仓库中的 `skills/review-agent`。兼容 Agent Skills 的非 Codex 宿主也只在没有等价评审 Skill 时安装该回退。
 6. 保持 `workflow` 与 `review-agent` 仅显式调用，并允许 `core-memory` 根据项目任务自动匹配。
-7. 验证 Skill 可被发现，并在 Codex 中验证 `terra-explorer`、`luna-worker`、`terra-reviewer` 三个角色可用；最后报告新增、复用、冲突、回退和显式调用方式。
+7. 验证 Skill 可被发现，并在 Codex 中验证 `terra-explorer`、`luna-worker`、`terra-reviewer` 三个角色可用；全局指导需新建 Codex 任务或会话后验证已加载。最后报告新增、复用、冲突、回退和显式调用方式。
 
 如果希望说得更明确，可以使用：
 
 ```text
-帮我从 https://github.com/duolabmeng6/AICodeCoreWorkflow 安装 workflow 和 core-memory；Codex 还要安装 agents/codex 下的自定义代理，并优先复用已有 review-agent、不覆盖 system Skill；其他兼容宿主可在缺少等价能力时安装仓库的 review-agent 回退。请验证安装成功。
+帮我从 https://github.com/duolabmeng6/AICodeCoreWorkflow 安装 workflow 和 core-memory；Codex 还要把中文全局 AGENTS 模板安装到解析后的 $CODEX_HOME/AGENTS.md，并只把 agents/codex/*.toml 安装到 $CODEX_HOME/agents/，全程保留并报告内容不同的已有文件，未经明确同意不得覆盖；优先复用已有 review-agent、不覆盖 system Skill，其他兼容宿主缺少等价能力时可安装仓库回退。请新建 Codex 任务或会话验证全局指导和自定义代理已加载。
 ```
 
 ## 使用
@@ -120,11 +121,14 @@ CoreFlow Ledger 保存已授权需求、实施计划、关键决策、验证结�
 
 Codex 中可生成的角色来自 `agents/codex/*.toml`：`terra-explorer` 负责只读探索，`luna-worker` 负责有边界的写入实现，`terra-reviewer` 负责独立只读评审。其他宿主可以使用语义和边界等价的 explorer、worker、reviewer 角色。
 
+`agents/codex/AGENTS.md` 提供宿主级通用所有权、路由、隔离与验收规则，不复制 `workflow` 的 simple/standard/complex 分级、能力回退和复评闭环，也不会让普通请求自动进入工作流；用户显式调用 `workflow` 后，再叠加 Skill 中更具体的阶段与屏障。安装到解析后的 `$CODEX_HOME/AGENTS.md` 后，需新建 Codex 任务或会话验证指导已加载；若目标已有不同内容，必须保留、报告并取得明确同意，绝不静默覆盖。
+
 ## 仓库结构
 
 ```text
 agents/
 └── codex/
+    ├── AGENTS.md
     ├── luna-worker.toml
     ├── terra-explorer.toml
     └── terra-reviewer.toml
@@ -151,9 +155,9 @@ skills/
 | Agent | 必装 Skill | Review Skill | 自定义代理 | 显式调用 |
 | --- | --- | --- | --- | --- |
 | Claude Code | 把 `workflow`、`core-memory` 放到 `~/.claude/skills/` 或 `.claude/skills/` | 无等价 Skill 时可安装 `review-agent` | 使用宿主提供的等价角色 | `/workflow`、`/core-memory`、`/review-agent` |
-| Codex | 把 `workflow`、`core-memory` 放到 `~/.agents/skills/`、`$CODEX_HOME/skills/` 或项目 `.agents/skills/` | 优先复用内置/system `review-agent`，不得覆盖；缺失时才安装仓库回退 | 把 `agents/codex/*.toml` 放到 `${CODEX_HOME:-$HOME/.codex}/agents/` | `$workflow`、`$core-memory`、`$review-agent` |
+| Codex | 把 `workflow`、`core-memory` 放到 `~/.agents/skills/`、`$CODEX_HOME/skills/` 或项目 `.agents/skills/` | 优先复用内置/system `review-agent`，不得覆盖；缺失时才安装仓库回退 | 解析 `${CODEX_HOME:-$HOME/.codex}`；把 `AGENTS.md` 放到 `$CODEX_HOME/AGENTS.md`，只把 `*.toml` 放到 `$CODEX_HOME/agents/` | `$workflow`、`$core-memory`、`$review-agent` |
 
-使用软链接安装时，后续只需更新本仓库；复制安装时，需要重新复制相应目录。手动安装也必须逐项检查同名目标：内容不同先保留并确认，不得覆盖自定义代理或用仓库中的 `skills/review-agent` 覆盖 Codex 已有的内置或 system 版本。
+使用软链接安装时，后续只需更新本仓库；复制安装时，需要重新复制相应目录。手动安装也必须逐项检查同名目标：不存在则安装，相同则复用，不同则保留并报告，获得明确同意后才能替换；尤其不得静默覆盖全局 `AGENTS.md`、自定义代理或 Codex 已有的内置/system `review-agent`。安装全局模板后需新建 Codex 任务或会话验证指导已加载。
 
 
 # linux.do 社区
