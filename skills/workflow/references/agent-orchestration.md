@@ -19,6 +19,8 @@
 
 ## 契约与屏障
 
+Codex 优先把 explorer、worker、reviewer 分别映射为仓库随附的 `terra-explorer`、`luna-worker`、`terra-reviewer` 自定义代理；其他宿主可使用职责、权限边界与输出契约等价的角色。`$review-agent` 是评审契约和缺少内置评审 Skill 时的回退，不是可生成的自定义代理；需要独立 reviewer 时应生成 `terra-reviewer` 或宿主等价角色，再让其遵守该评审契约。
+
 负载字段：objective/question；相关路径；约束/非目标；所有权与只读边界；验收/验证；预期精炼输出。禁止子代理委派。输出只含结论、证据位置、风险/未决项及变更/测试/发现，不含原始日志、完整搜索、思维链、代理身份、模型、令牌或运行轨迹。
 
 standard/complex explorer 结果必须完成后才能最终计划和产品写入；simple 豁免。复杂计划 reviewer 必须是独立只读能力/代理，不能是根计划作者或任何执行 worker，并且必须先于 workers 完成；所有 worker 完成后才 review；reviewer 与被评 worker 不并发；实质修复需聚焦复评。执行中根代理只读并维护编排计划/CoreFlow/memory，不改 worker 所有文件。默认一名写 worker；并行写入须声明不重叠路径/符号、输入输出依赖、验证方法，并由根代理做交集检查，遇重叠或动态依赖串行化或重派。
